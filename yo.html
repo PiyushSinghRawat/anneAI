@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anne</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <style>
+      .backNone {
+        background-color: white !important;
+        color: #000000 !important;
+      }
+      .mainContainer{
+        width: 60%;
+        height: 60vh;
+        margin: auto;
+        margin-top: 100px;
+      }
+      #image{
+        width: 100%;
+
+      }
+      body{
+        background-color: black;
+        color: white;
+      }
+      table{
+        margin: auto;
+        font-size: 1.5rem;
+      }
+      .red{color: rgb(255, 0, 0);}
+      .yellow{
+        color: yellow;
+      }
+    </style>
+  </head> 
+  <body>
+    <section class="mainContainer">
+      <p class="fixed-top text-center" style="margin-top: -15px;font-size: 100px;">Anne AI</p>
+      <img id="image" src="./65a8e037a9cf99aabbe9e385_ai-gif-generator-7.gif" alt="">
+      <table>
+        <tr>
+          <td> <span class="red">S</span>elect a <span class="yellow">S</span>ervice</td>
+          <td>
+            <select class="text-center" onchange="changefunction()" id="options">
+              <option class="backNone" value="">--</option>
+              <option class="backNone" value="calculator">use calculator functions</option>
+              <option class="backNone" value="backGround">change background Color</option>
+              <option class="backNone" value="gSearch">google search</option>
+              <option class="backNone" value="joke">get a joke</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="red">E</span>nter <span class="yellow">T</span>he <span class="red">R</span>equest
+          </td>
+          <td>
+            <input class=" " id="searchText" type="text" />
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="yellow">C</span>lick <span class="red">T</span>o <span class="yellow">S</span>ee <span class="red">C</span>hange
+          </td>
+          <td>
+            <button class=" btn btn-primary" id="searchBtn">select something</button>
+            <button class=" btn btn-secondary" id="voiceBtn">🎤 Voice Input</button>
+          </td>
+        </tr>
+      </table>
+      <h4 class="text-center mt-5" id="result"></h4>
+    </section>
+    
+    <script>
+      // Global variables for Speech Recognition and Synthesis
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      const synth = window.speechSynthesis;
+      let searchBtn = document.querySelector("#searchBtn");
+      let voiceBtn = document.querySelector("#voiceBtn");
+      let searchText = document.querySelector("#searchText");
+      let result = document.querySelector("#result");
+      let options = document.querySelector("#options");
+
+      // Text to Speech (Voice Output)
+      function speak(text) {
+        let utterance = new SpeechSynthesisUtterance(text);
+        synth.speak(utterance);
+      }
+
+      // Voice Input (Speech Recognition)
+      voiceBtn.addEventListener('click', () => {
+        recognition.start();
+      });
+
+      recognition.onresult = (event) => {
+        let spokenText = event.results[0][0].transcript;
+        searchText.value = spokenText;
+        speak(`You said ${spokenText}`);
+      };
+
+      searchBtn.addEventListener("click", async () => {
+        let optionVal = options.value;
+        let searchValue = searchText.value;
+        if (optionVal == "calculator") {
+          let finalVal = eval(searchValue);
+          console.log(finalVal);
+          result.textContent = finalVal;
+          speak(`The result is ${finalVal}`);
+        } else if (optionVal === "backGround") {
+          document.body.style.backgroundColor = searchValue;
+          let allElements = document.querySelectorAll("*");
+          allElements.forEach((element) => {
+            let elementBgColor = window.getComputedStyle(element).backgroundColor;
+            if (elementBgColor === "rgb(255, 255, 255)" || searchValue.toLowerCase() === "white") {
+              element.style.color = "black";
+            } else {
+              element.style.color = "white";
+            }
+          });
+          speak(`Background color changed to ${searchValue}`);
+        } else if (optionVal === "gSearch") {
+          let googleSearchURL = `https://www.google.com/search?q=${encodeURIComponent(
+            searchValue
+          )}`;
+          speak(`Searching Google for ${searchValue}`);
+          window.open(googleSearchURL, "_self"); 
+        } else if (optionVal === 'joke') {
+          try {
+            let joke = await fetchJoke();
+            result.textContent = joke;
+            speak(joke);
+          } catch (e) {
+            result.textContent = "Failed to fetch joke";
+            speak("Failed to fetch a joke");
+          }
+        }
+        searchText.value = "";
+      });
+
+      function changefunction(){
+        if (options.value=='backGround') {
+            searchBtn.textContent='change color'
+        }else if (options.value=='calculator') {
+            searchBtn.textContent='get value'
+        }else if (options.value=='gSearch') {
+            searchBtn.textContent='search online'
+        }else if (options.value=='joke') {
+            searchBtn.textContent='get your joke'
+        }
+      }
+
+      async function fetchJoke() {
+        const response = await fetch('https://v2.jokeapi.dev/joke/Any');
+        const data = await response.json();
+        if (data.type === 'single') {
+          return data.joke;
+        } else if (data.type === 'twopart') {
+          return `${data.setup} - ${data.delivery}`;
+        }
+        return 'No joke found';
+      }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+  </body>
+</html>
